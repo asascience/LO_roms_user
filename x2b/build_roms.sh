@@ -109,7 +109,7 @@ export   ROMS_APPLICATION=$THISDIR
 # Set a local environmental variable to define the path to the directories
 # where all this project's files are kept.
 
-export        MY_ROOT_DIR=/gscratch/macc/parker
+export        MY_ROOT_DIR=${MY_ROOT_DIR:-/gscratch/macc/parker}
 export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.
@@ -171,9 +171,12 @@ export     MY_PROJECT_DIR=${PWD}
 
 #export        USE_OpenMP=on            # shared-memory parallelism
 
- export              FORT=ifort
+# This is used to select the makefile
+ export              FORT=${FORT:-ifort}
 #export              FORT=gfortran
 #export              FORT=pgi
+
+ export              USE_AVX512=${USE_AVX512}
 
 #export         USE_DEBUG=on            # use Fortran debugging flags
  export         USE_LARGE=on            # activate 64-bit compilation
