@@ -1,6 +1,6 @@
 # README for LO_roms_user
 
-### This repo is a place for user versions of code used to compile ROMS code associated with the git repository LO_roms_source.
+### This repo is a place for user versions of code used to compile ROMS code associated with the git repository LO_roms_source_git.
 
 These notes are written for klone, but should work with only minor changes for mox.
 
@@ -18,7 +18,11 @@ alias agee='ssh parker@apogee.ocean.washington.edu'
 ```
 Note: klone1 is the same as klone.  If you just ssh to mox you end up randomly at either mox1 or mox2, which are the same machine except that they keep separate crontabs. I always ssh to mox1 to avoid confusion.
 
-`/gscratch/macc` is our working directory on both mox and klone, and I have created my own directory inside that: parker, where the whole LO system lives.
+---
+
+#### Tools to control jobs running on klone
+
+`/gscratch/macc` is our working directory on both mox and klone because on hyak we are the "macc" group. I have created my own directory inside that: "parker", where all my code for running ROMS is stored.
 
 When you have a job running on klone you can check on it using:
 ```
@@ -28,11 +32,17 @@ or on mox:
 ```
 squeue -p macc
 ```
+If you want to stap a running job, find the job ID (the number to the left in the squeue listing) and issue the command:
+```
+scancel [job ID]
+```
+Since your job will typically have been launched by a python driver you will also want to stop tat driver. Use "top" to find the associated job ID, and then use the "kill" command.
+
 ---
 
 #### Getting resource info
 
-`hyakstorage` will give info about storage on klone.  Use `hyakstorage --help` to get more info on command options. Not yet working on mox.
+`hyakstorage` will give info about storage on klone.  Use `hyakstorage --help` to get more info on command options. This is not yet working on mox.
 
 To check on our disk allocation on mox you can also look in the file `/gscratch/macc/usage_report.txt` although this will be phased out soon.
 
@@ -46,7 +56,10 @@ To check on our disk allocation on mox you can also look in the file `/gscratch/
 
 #### Once you have gotten a klone account from our system administrator, you have two directories to be aware of.
 
-**First directory:** In your home directory (~) you will need to add some lines to your .bashrc using vi or whatever your favorite command line text editor is.  Here is what mine looks like:
+**First directory:** In your home directory (~) you will need to add some lines to your .bashrc using vi or whatever your favorite command line text editor is.
+
+Here is my .bashrc on klone:
+
 ```
 # .bashrc
 
@@ -75,7 +88,6 @@ export PATH=/gscratch/macc/local/netcdf-ifort/bin:$PATH
 export PATH=/gscratch/macc/local/netcdf-icc/bin:$PATH
 #export PATH=/gscratch/macc/local/openmpi-ifort/bin:$PATH
 
-
 # Uncomment the following line if you don't like systemctl's auto-paging feature:
 # export SYSTEMD_PAGER=
 
@@ -86,24 +98,30 @@ alias cdLu='cd /gscratch/macc/parker/LO_user'
 alias cdLoo='cd /gscratch/macc/parker/LO_output'
 alias cdLor='cd /gscratch/macc/parker/LO_roms'
 alias cdLru='cd /gscratch/macc/parker/LO_roms_user'
-alias cdLrs='cd /gscratch/macc/parker/LO_roms_source'
-alias cdLra='cd /gscratch/macc/parker/LO_roms_source_alt'
+alias cdLrs='cd /gscratch/macc/parker/LO_roms_source_git'
 alias cdLod='cd /gscratch/macc/parker/LO_data'
 alias pmsrun='srun -p compute -A macc --pty bash -l'
 alias buildit='./build_roms.sh -j 10 < /dev/null > bld.log &'
 alias mli='module load intel/oneAPI'
 ```
+
+The section of aliases are what I use to help move around quickly.  You might want similar aliases but be sure to substitute the name of your working directory for "parker".
+
 In particular you will need to copy and paste in the section with all the module and export lines.  These make sure you are using the right NetCDF and MPI libraries.
 
-The section of aliases are what I use to help move around quickly.  You might want similar aliases but be sure to substitute the name of your working directory for `parker`.
+Note: I need to clean this up by getting rid of obsolete export calls, and setting the base working directory as a variable.
 
-**Second directory:** The main place where you will install, compile, and run ROMS is your working directory: /gscratch/macc/[whatever].  We call this (+) below.
+**Second directory:** The main place where you will install, compile, and run ROMS is your working directory:
+
+**/gscratch/macc/[your directory name]**  We call this **(+)** below.
+
+Note: Even though my username on klone is "pmacc" my main directory is "parker". This implies that there is less restriction in naming things on klone compared to apogee and perigee. I don't recall who set up my initial directory. Either David Darr or I did it.
 
 ---
 
 #### Set up ssh-keygen to apogee
 
-The LO ROMS driver system tries to minimize the files we store on hyak, because the ROMS output files could quickly exceed our quotas.  To do this the drivers (e.d. LO/driver/driver_roms2.py) uses scp to copy forcing files and ROMS output files to apogee or perigee where we have lots of storage.  Then the driver automatically deletes unneeded files on hyak.  To allow the driver to do this automatically you have to grant it access to your account on perigee or apogee, using the ssh-keygen steps described here.
+The LO ROMS driver system tries to minimize the files we store on hyak, because the ROMS output files could quickly exceed our quotas.  To do this the drivers (e.d. LO/driver/driver_roms3.py) uses scp to copy forcing files and ROMS output files to apogee or perigee where we have lots of storage.  Then the driver automatically deletes unneeded files on hyak after each day it runs.  To allow the driver to do this automatically you have to grant it access to your account on perigee or apogee, using the ssh-keygen steps described here.
 
 Log onto klone1 and do:
 ```
@@ -115,12 +133,11 @@ Enter file in which to save the key (/mmfs1/home/pmacc/.ssh/id_rsa):
 /mmfs1/home/pmacc/.ssh/id_rsa already exists.
 Overwrite (y/n)?
 ```
-Looking [HERE](https://www.hostdime.com/kb/hd/linux-server/the-guide-to-generating-and-uploading-ssh-keys), I found out that id_rsa is the default name that it looks for automatically.  You can name the key anything and then just refer to it when using ssh and etc. like:
+Looking [HERE](https://www.hostdime.com/kb/hd/linux-server/the-guide-to-generating-and-uploading-ssh-keys), I found out that id_rsa is the default name that it looks for automatically. You can name the key anything and then just refer to it when using ssh and etc. like:
 ```
 ssh parker@apogee.ocean.washington.edu -i /path/to/ssh/key
 ```
-
-In the interests of tidying up I will chose to **overwrite** in the above. When I did this it asked for a passphrase and I hit return (no passphrase).
+In the interests of tidying up I chose to **overwrite** in the above. When I did this it asked for a passphrase and I hit return (no passphrase).
 
 Then I did:
 ```
@@ -128,9 +145,9 @@ ssh-copy-id parker@apogee.ocean.washington.edu
 ```
 (it asks for my apogee password)
 
-And now I can ssh and scp from klone to apogee without a password, and on apogee it had added a key with pmacc@klone1.hyak.local at the end to my ~/.ssh/authorized_keys.
+And now I can ssh and scp from klone to apogee without a password, and on apogee it added a key with pmacc@klone1.hyak.local at the end to my ~/.ssh/authorized_keys.
 
-On klone there is now an entry in ~/.ssh/known_hosts for apogee.ocean.washington.edu.
+Similarly, on klone there is now an entry in ~/.ssh/known_hosts for apogee.ocean.washington.edu.
 
 So, in summary: for going from klone1 to apogee it added to:
 - ~/.ssh/known_hosts on klone (boiler and mox1 are also there), and
@@ -138,20 +155,19 @@ So, in summary: for going from klone1 to apogee it added to:
 
 Now I can run `ssh-copy-id` again for other computers, without having to do the `ssh-keygen` step.
 
+Don't worry if things get messed up. Just delete the related entries in the .ssh files and start again. This is a good place to remind yourself that you need to be able to edit text files from the command line on remote machines, e.g. using vi.
+
 ---
 
-#### Working from (+), clone the LO, and LO_roms_source_alt repos:
+#### Working from (+), clone the LO repo:
 ```
 git clone https://github.com/parkermac/LO.git
-```
-```
-git clone https://github.com/parkermac/LO_roms_source_alt.git
 ```
 Also clone your own LO_user repo.
 
 ---
 
-#### Before you get the ROMS code repo you need to get a ROMS account.  See the first bullet link below.
+#### Before you start using ROMS you should get a ROMS account.  See the first bullet link below.
 
 Places for ROMS info:
 - https://www.myroms.org/ Main page.  Click the "Register" tab to get an account.
@@ -163,13 +179,11 @@ Places for ROMS info:
 
 #### Get the ROMS source code
 
-Then put the ROMS source code on klone, again working in (+).  Do this using svn (subversion, similar to git).  Just type this command (substituting in your ROMS username, no []).  This will create a folder LO_roms_source with all the ROMS code.
+Then put the ROMS source code on klone, again working in (+).  Do this using git.  Just type this command.  This will create a folder LO_roms_source_git with all the ROMS code.
 ```
-svn checkout --username [your ROMS username] https://www.myroms.org/svn/src/trunk LO_roms_source
+git clone https://github.com/myroms/roms.git LO_roms_source_git
 ```
-It will ask for your ROMS password. You can bring the repo up to date anytime from inside LO_roms_source by typing `svn up`.    You can also ask for a specific revision of the code, and many other things.  Type `svn help` to find out more.
-
-NOTE: the LO_roms_source_alt repo that you cloned above has versions of bits of the ROMS source code that we have edited, such as the modified biogeochemical code.  We keep these in a separate repo to they do not conflict with the original source code.  We are about to point our compiler to look in this directory for what it needs.
+You can bring the repo up to date anytime from inside LO_roms_source_git by typing `git pull`.
 
 ---
 
@@ -180,10 +194,10 @@ Copy some of my code from https://github.com/parkermac/LO_roms_user into your LO
 This is the upwelling test case that comes with ROMS.  It is always the first thing you should try to run when moving to a new version of ROMS or a new machine.
 
 I have created a few files to run it on klone:
-- `build_roms.sh` modified from LO_roms_source/ROMS/Bin.  **You need to edit line 112 so that MY_ROOT_DIR is equal to your (+).**
-- `upwelling.h` modified from LO_roms_source/ROMS/Include.  No need to edit.
-- `roms_upwelling.in` modified from LO_roms_source/ROMS/External.  **You will need to edit line 77 so that the path to varinfo.yaml points to (+).**
-- `klone_batch0.sh` created from scratch.  **You will need to edit line 23 so that RUN_DIR points to (+).**
+- `build_roms.sh` modified from LO_roms_source_git/ROMS/Bin.  **You need to edit line 152 so that MY_ROOT_DIR is equal to your (+).**
+- `upwelling.h` copied from LO_roms_source_git/ROMS/Include.  No need to edit.
+- `roms_upwelling.in` modified from LO_roms_source_git/ROMS/External.  **You will need to edit line 78 so that the path to varinfo.yaml points to (+).**
+- `klone_batch0.sh` created from scratch.  **You will need to edit line 24 so that RUN_DIR points to (+).**
 
 After you have edited everything on your personal computer, push it to GitHub, and clone it to (+) on klone.
 
@@ -240,21 +254,40 @@ If it ran correctly it will create a log file roms_log.txt and NetCDf output: ro
 
 #### Running things by cron
 
-These are only used by the daily forecast. See LO/driver/crontabs for current versions.  These are discussed more in LO/README.md.
+These are mainly used by the daily forecast but can also be helpful for checking on long hindcasts and sending you an email. See LO/driver/crontabs for my current versions.  These are discussed more in LO/README.md.
 
 ---
 
 ## LO Compiler Configurations
 
-Below we list the current folders where we define LO-specific compiling choices.  The name of each folder refers to [ex_name] in the LO run naming system.  Before compiling, each contains only:
+Below we list the current folders where we define LO-specific compiling choices.  The name of each folder refers to [ex_name] in the LO run naming system.  Before compiling, each contains:
 - `build_roms.sh` Which can be copied directly from your `upwelling` folder, without need to edit.
 - `[ex_name].h` This has configuration specific compiler flags.  You can explore the full range of choices and their meanings in `LO_roms_source/ROMS/External/cppdefs.h`.
+- `fennel.h` if this is a run with biology.
 
 NOTE: to run any of these, or your own versions, you have to make the LO_data folder in (+) and use scp to get your grid folder from perigee or apogee.
 
 **NOTE: the ex_name can have numbers, but no underscores, and all letters MUST be lowercase.**
 
 ---
+
+## CURRENT
+
+#### x4b
+
+Like x2b but modified by Aurora Leeson (her meV00) to increase the light attenuation by a factor of three for the Salish Sea. In her tests she also used the full TRAPS forcing (WWTP bug fixed) and MPDATA for bio tracer advection in the dot_in. This should be the default code for the long hindcast and for whenever we update the forecast. 2023.11.05
+
+---
+
+#### xa0
+
+Meant for an analytical run. Basically identical to x4b but with the atmospheric forcing set to zero, and biology turned off. This replaces uu1k which did the same thing previously.
+
+---
+
+## OBSOLETE BUT RECENT
+
+Mostly I call these _obsolete_ becasue they use the somewhat older ROMS we had from svn, and they rely on varinfo.yaml in LO_roms_source_alt. But some of them are being used for the current daily forecast, specifically x2b and xn0b.
 
 #### uu0mb
 
@@ -328,14 +361,7 @@ Designed to run a nested model. Omits tidal forcing. Has biology from x2b. Other
 
 ---
 
-Example command to run it:
-
-```
-python3 driver_roms3.py -g ae0 -t v0 -x uu1k -r backfill -s new -0 2020.01.01 -1 2020.01.02 -np 40 -N 40 < /dev/null > ae.log &
-```
----
-
-## OBSOLETE
+## OBSOLETE AND VERY OLD
 
 ### These notes are only relevant to the old ROMS installation used in the LiveOcean (not LO) system
 

@@ -133,10 +133,11 @@ done
 # determine the name of the ".h" header file with the application
 # CPP definitions.
 
-# export   ROMS_APPLICATION=UPWELLING
 thisdir=${PWD##*/}
 THISDIR=$(echo "$thisdir" | tr '[:lower:]' '[:upper:]')
 export   ROMS_APPLICATION=$THISDIR
+# export   ROMS_APPLICATION=UPWELLING
+
 # Set a local environmental variable to define the path to the directories
 # where the ROMS source code is located (MY_ROOT_DIR), and this project's
 # configuration and files are kept (MY_PROJECT_DIR). Notice that if the
@@ -144,12 +145,12 @@ export   ROMS_APPLICATION=$THISDIR
 # script describing the location from where the ROMS source code was cloned
 # or downloaded, it uses that value.
 
+export        MY_ROOT_DIR=/gscratch/macc/parker
 # if [ -n "${ROMS_ROOT_DIR:+1}" ]; then
 #   export      MY_ROOT_DIR=${ROMS_ROOT_DIR}
 # else
 #   export      MY_ROOT_DIR=${HOME}/ocean/repository/git
 # fi
-export        MY_ROOT_DIR=/gscratch/macc/parker
 
 export     MY_PROJECT_DIR=${PWD}
 
@@ -163,7 +164,8 @@ export     MY_PROJECT_DIR=${PWD}
 # This script allows for differing paths to the code and inputs on other
 # computers.
 
- export       MY_ROMS_SRC=${MY_ROOT_DIR}/LO_roms_source_git
+#export       MY_ROMS_SRC=${MY_ROOT_DIR}/roms
+export       MY_ROMS_SRC=${MY_ROOT_DIR}/LO_roms_source_git
 
 # Set path of the directory containing makefile configuration (*.mk) files.
 # The user has the option to specify a customized version of these files
