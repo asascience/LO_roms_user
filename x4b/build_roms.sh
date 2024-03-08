@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 # git $Id$
 # svn $Id: build_roms.sh 1202 2023-10-24 15:36:07Z arango $
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -145,13 +144,7 @@ export   ROMS_APPLICATION=$THISDIR
 # script describing the location from where the ROMS source code was cloned
 # or downloaded, it uses that value.
 
-export        MY_ROOT_DIR=/gscratch/macc/parker
-# if [ -n "${ROMS_ROOT_DIR:+1}" ]; then
-#   export      MY_ROOT_DIR=${ROMS_ROOT_DIR}
-# else
-#   export      MY_ROOT_DIR=${HOME}/ocean/repository/git
-# fi
-
+export  MY_ROOT_DIR=${MY_ROOT_DIR:-/gscratch/macc/parker}
 export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.
@@ -214,9 +207,11 @@ export       MY_ROMS_SRC=${MY_ROOT_DIR}/LO_roms_source_git
 
 #export        USE_OpenMP=on            # shared-memory parallelism
 
- export              FORT=ifort
+ export              FORT=${FORT:-ifort}
 #export              FORT=gfortran
 #export              FORT=pgi
+
+ export              USE_AVX512=${USE_AVX512}
 
 #export         USE_DEBUG=on            # use Fortran debugging flags
  export         USE_LARGE=on            # activate 64-bit compilation

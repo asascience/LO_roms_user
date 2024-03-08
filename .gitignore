@@ -117,7 +117,8 @@ dmypy.json
 .pyre/
 
 # ROMS build artifacts
-**/Build_roms/
+**/Build_roms
+**/Build_romsM
 **/a.out
 **/romsM
 **/romsG
